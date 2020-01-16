@@ -118,6 +118,19 @@ def fill_attributes(df, attr_list):
             print("No unique values to fill the attributes")
     return df
 
+def fill_numerical_data(df):
+    print("Forward Fill")
+    df[['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+       'wind_direction', 'wind_speed']] = df.groupby(['building_id','meter'])['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+       'wind_direction', 'wind_speed'].fillna(method='ffill')
+    
+    print("Backward Fill")
+    df[['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+       'wind_direction', 'wind_speed']] = df.groupby(['building_id','meter'])['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+       'wind_direction', 'wind_speed'].fillna(method='bfill')
+    
+    return df
+
 def create_features(df, limit_sqft):
     print(df['building_id'].unique()[0])
     ## Features from timestamp
@@ -236,17 +249,21 @@ def main():
     
     ## Filling Numerical data
     print("Filling numerical data")
-    print("Forward Fill")
-    train_final_null_df[['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
-       'wind_direction', 'wind_speed']] = train_final_null_df.groupby(['building_id','meter'])['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
-       'wind_direction', 'wind_speed'].fillna(method='ffill')
+    train_final_null_df[['building_id', 'meter', 'air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+       'wind_direction', 'wind_speed']] = parallelize_dataframe(train_final_null_df[['building_id', 'meter', 'air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+       'wind_direction', 'wind_speed']], ['building_id','meter'], fill_numerical_data)
     print(train_final_null_df.isnull().sum())
-    
-    print("Backward Fill")
-    train_final_null_df[['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
-       'wind_direction', 'wind_speed']] = train_final_null_df.groupby(['building_id','meter'])['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
-       'wind_direction', 'wind_speed'].fillna(method='ffill')
-    print(train_final_null_df.isnull().sum())
+#    print("Forward Fill")
+#    train_final_null_df[['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+#       'wind_direction', 'wind_speed']] = train_final_null_df.groupby(['building_id','meter'])['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+#       'wind_direction', 'wind_speed'].fillna(method='ffill')
+#    print(train_final_null_df.isnull().sum())
+#    
+#    print("Backward Fill")
+#    train_final_null_df[['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+#       'wind_direction', 'wind_speed']] = train_final_null_df.groupby(['building_id','meter'])['air_temperature', 'cloud_coverage', 'dew_temperature', 'precip_depth_1_hr', 'sea_level_pressure',
+#       'wind_direction', 'wind_speed'].fillna(method='bfill')
+#    print(train_final_null_df.isnull().sum())
     
     
     ## Creating Features
